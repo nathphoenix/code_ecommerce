@@ -1,0 +1,1 @@
+if you want to add localization for another language, all you have to do is copy the existing json, leave the keys and change the values that is on the right side

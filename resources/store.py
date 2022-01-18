@@ -1,0 +1,50 @@
+from flask_restful import Resource
+from models.store import StoreModel
+from schemas.store import StoreSchema
+from libs.strings import gettext
+
+NAME_ALREADY_EXISTS = "A store with name '{}' already exists."
+ERROR_INSERTING = "An error occurred while inserting the store."
+STORE_NOT_FOUND = "Store not found."
+STORE_DELETED = "Store deleted."
+
+store_schema = StoreSchema()
+store_list_schema = StoreSchema(many=True)
+
+
+class Store(Resource):
+    @classmethod
+    def get(cls, name: str):
+        store = StoreModel.find_by_name(name)
+        if store:
+            return store_schema.dump(store)
+        return {"message": gettext("store_not_found")}, 404
+
+    @classmethod
+    def post(cls, name: str):
+        if StoreModel.find_by_name(name):
+            return {"message": gettext("store_name_exists").format(name)}, 400
+
+        # because we delete the _init_model from store model, we can't use "name" again instead we use name=name
+        store = StoreModel(name=name)  # it accept this because it is a model subclass
+        try:
+            store.save_to_db()
+        except:
+            return {"message": gettext("store_error_inserting")}, 500
+
+        return store_schema.dump(store), 201
+
+    @classmethod
+    def delete(cls, name: str):
+        store = StoreModel.find_by_name(name)
+        if store:
+            store.delete_from_db()
+            return {"message": gettext("store_deleted")}, 200
+
+        return {"message": gettext("store_not_found")}, 404
+
+
+class StoreList(Resource):
+    @classmethod
+    def get(cls):
+        return {"stores": store_list_schema.dump(StoreModel.find_all())}, 200

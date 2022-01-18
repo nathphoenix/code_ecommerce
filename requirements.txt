@@ -1,0 +1,8 @@
+Flask
+Flask-JWT-Extended
+Flask-RESTful
+Flask-SQLAlchemy
+python-dotenv
+marshmallow-sqlalchemy
+marshmallow
+Flask-OAuthlib
